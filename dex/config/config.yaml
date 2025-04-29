@@ -1,0 +1,35 @@
+issuer: https://dex.devopsbd.site/dex
+
+storage:
+  type: sqlite3
+  config:
+    file: /var/dex/dex.db
+
+web:
+  http: 0.0.0.0:5556
+frontend:
+  issuer: https://dex.devopsbd.site/dex
+  theme: "light"
+  logoutRedirectURL: "https://grafana.devopsbd.site/login"
+
+staticClients:
+  - id: forgejo
+    redirectURIs:
+      - "https://forgejo.devopsbd.site/user/oauth2/dex/callback"
+    name: "Forgejo"
+    secret: forgejo_secret
+
+  - id: grafana
+    redirectURIs:
+      - "http://localhost:3000/login/generic_oauth" # For local development
+      - "https://grafana.devopsbd.site/login/generic_oauth" # For production
+    name: "Grafana"
+    secret: grafana_secret
+connectors:
+  - type: google
+    id: google
+    name: Google
+    config:
+      clientID:
+      clientSecret:
+      redirectURI: 

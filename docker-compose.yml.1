@@ -1,0 +1,75 @@
+services:
+  # Dex OIDC Provider
+  dex:
+    image: ghcr.io/dexidp/dex:v2.36.0
+    container_name: dex
+    ports:
+      - "5556:5556"
+    volumes:
+      - ./dex/config:/etc/dex/config:ro
+    command: ["dex", "serve", "/etc/dex/config/config.yaml"]
+    restart: unless-stopped
+    networks:
+      - sso-network
+
+  # Forgejo Git Service
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:1.20
+    container_name: forgejo
+    ports:
+      - "3000:3000"
+    environment:
+      - FORGEJO__security__INSTALL_LOCK=true
+      - FORGEJO__database__DB_TYPE=sqlite3
+      - FORGEJO__database__PATH=/data/forgejo.db
+      - FORGEJO__server__DOMAIN=forgejo.devopsbd.site
+      - FORGEJO__server__ROOT_URL=https://forgejo.devopsbd.site
+      - FORGEJO__oauth2__ENABLED=true
+      - FORGEJO__oauth2__JWT_SECRET=SIGVJfuwHVRnQ+rrhRoKzw7gExdOZLGVVX0pp3Z4UKo=
+    volumes:
+      - ./forgejo/data:/data
+    restart: unless-stopped
+    networks:
+      - sso-network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=true
+      - GF_AUTH_GENERIC_OAUTH_NAME=Dex
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=grafana
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=grafana_secret
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://dex.devopsbd.site/dex/auth
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://dex.devopsbd.site/dex/token
+      - GF_AUTH_GENERIC_OAUTH_API_URL=https://dex.devopsbd.site/dex/userinfo
+      - GF_AUTH_SIGNOUT_REDIRECT_URL=https://grafana.devopsbd.site/login
+      - GF_SERVER_ROOT_URL=https://grafana.devopsbd.site
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - sso-network
+
+  # Nginx Reverse Proxy with Let's Encrypt
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - sso-network
+
+networks:
+  sso-network:
+    driver: bridge
