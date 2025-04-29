@@ -25,6 +25,7 @@ staticClients:
       - "https://grafana.devopsbd.site/login/generic_oauth" # For production
     name: "Grafana"
     secret: grafana_secret
+
 connectors:
   - type: google
     id: google
@@ -32,4 +33,4 @@ connectors:
     config:
       clientID:
       clientSecret:
-      redirectURI: 
+      redirectURI:
