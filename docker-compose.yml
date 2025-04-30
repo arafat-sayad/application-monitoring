@@ -92,6 +92,10 @@ services:
       - ./.data/certs/certbot/conf:/etc/letsencrypt ## For production
       - ./.data/certs/certbot/www:/var/www/certbot ## For production
     restart: unless-stopped
+    depends_on:
+      - grafana
+      - forgejo
+      - dex
     networks:
       - sso-network
 

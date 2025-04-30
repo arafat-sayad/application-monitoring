@@ -6,7 +6,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 # put your multi domain here, separated by space. Don't forget make nginx multi domain conf
-domains=(example.com)
+domains=(dex.devopsbd.site forgejo.devopsbd.site grafana.devopsbd.site)
 rsa_key_size=4096
 data_path="./.data/certs"
 email="arafat.sayadbd@gmail.com" # Adding a valid address is strongly recommended, please add your own email !
