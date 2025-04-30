@@ -189,13 +189,13 @@ services:
 
   certbot:
     image: certbot/certbot
-    container_name: storesync-certbot
+    container_name: certbot
     restart: unless-stopped
     volumes:
       - ./.data/certs/certbot/conf:/etc/letsencrypt
       - ./.data/certs/certbot/www:/var/www/certbot
     networks:
-      - storesync_shopify_network
+      - sso-network
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   # Caddy
