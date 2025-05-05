@@ -3,6 +3,30 @@ networks:
     driver: bridge
 
 services:
+  # Nginx Reverse Proxy with Let's Encrypt
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/logs:/var/log/nginx
+      - ./.data/certs/certbot/conf:/etc/letsencrypt ## For production
+      - ./.data/certs/certbot/www:/var/www/certbot ## For production
+    restart: unless-stopped
+    depends_on:
+      - grafana
+      - forgejo
+      - dex
+    networks:
+      - sso-network
+    labels:
+      org.label-schema.group: "nginx"
+
+
   # PostgreSQL Database
   postgres:
     image: postgres:15
@@ -77,27 +101,9 @@ services:
     restart: unless-stopped
     networks:
       - sso-network
+    labels:
+      org.label-schema.group: "grafana"
 
-  # Nginx Reverse Proxy with Let's Encrypt
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/logs:/var/log/nginx
-      - ./.data/certs/certbot/conf:/etc/letsencrypt ## For production
-      - ./.data/certs/certbot/www:/var/www/certbot ## For production
-    restart: unless-stopped
-    depends_on:
-      - grafana
-      - forgejo
-      - dex
-    networks:
-      - sso-network
 
   # Prometheus
   prometheus:
